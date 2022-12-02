@@ -5,13 +5,19 @@ import pandas   as pd
 import networkx as nx
 import networkx.algorithms.components.connected as nxacc
 
+import warnings
+warnings.filterwarnings("ignore")
+
 class DataMOViDA:
 
     # TRAIN NEEDED INPUTS
     input_dir           = None
+    names_mo            = None
     cell2id_mapping     = None
     drug2id_mapping     = None
     mo_gene2idx         = None
+    genes_dim           = None
+    drugs_dim           = None
     train_data          = None
     test_data           = None
     val_data            = None
@@ -19,16 +25,19 @@ class DataMOViDA:
     ccl_features        = None
     drug_features       = None
     path_act            = None
+    term2id_mapping     = None
     hierarchy_graph     = None
     root                = None
 
-    def __init__(self, input_dir, 
+    def __init__(self, input_dir, names_mo,
                 drug2id, cell2id, mo_gene2id,
                 train_file, val_file, test_file, all_file,
                 cell2features, drug2features, pathway_act_file,
                 ontology, mo_gene2ontology):
         
         self.input_dir          = input_dir + "/"
+
+        self.names_mo           = names_mo
 
         # Dictionaries with position mapping
         self.cell2id_mapping    = self.load_mapping(self.input_dir + cell2id)
@@ -48,8 +57,13 @@ class DataMOViDA:
         self.ccl_features       = [np.genfromtxt(self.input_dir + feat_file, delimiter=',') for feat_file in cell2features]
         self.drug_features      = [np.genfromtxt(self.input_dir + feat_file, delimiter=',') for feat_file in drug2features]
 
+
+        # Drug dims
+        self.drugs_dim          = [x.shape[1] for x in self.drug_features]
+
+
         # Load pathway activities
-        self.path_act           = self.prepare_path_act(self.input_dir + pathway_act_file, self.cell2id_mapping)
+        self.path_act, self.term2id_mapping = self.prepare_path_act(self.input_dir + pathway_act_file, self.cell2id_mapping)
         
         # Load ontology 
         self.hierarchy_graph, self.root = self.load_ontology(self.input_dir + ontology)
@@ -93,7 +107,9 @@ class DataMOViDA:
 
         # the index of this dataframe will be the mapping of cell lines
         df_pact = df_pact.set_index("cell_id").drop(columns=["CCLE_Name", "COSMICID"], errors='ignore')
-        return df_pact
+
+        term2id_mapping = {term : idx for idx,term in enumerate(df_pact.columns)}
+        return df_pact.to_numpy(), term2id_mapping
 
     def load_ontology(self, file_name):
         '''
@@ -135,5 +151,15 @@ class DataMOViDA:
                 res[term] = set([mapping[x] for x in tmp])
         return res
 
-    def get_weights(data, eps):
-        pass
+def get_weights(label, eps):
+    classes = np.array(np.array(label) * 10, dtype=np.int64)
+    (unique, counts) = np.unique(classes, return_counts=True)
+    no_counts = [x for x in range(unique[-1]) if x not in unique]
+    for x in no_counts:
+        counts = np.insert(counts, x, 0)
+    weights = counts / counts.sum()
+    weights = 1.0 / weights + eps
+    weights = np.nan_to_num(weights, nan=0, neginf=0, posinf=0)
+    weights = weights / weights.sum()
+
+    return weights[classes]

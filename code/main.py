@@ -33,7 +33,7 @@ param_train = ParamTrainMOViDA(
                 cuda                = 0, 
                 epoch               = 2, 
                 lr                  = 0.001, 
-                batchsize           = 10000, 
+                batchsize           = 30000, 
                 loss_func           = weighted_mse_loss,
                 metric_func         = mean_mse_loss,
                 sampler_bool        = True,
@@ -52,12 +52,14 @@ param_train = ParamTrainMOViDA(
 
 
 # %%
+print("Read Data")
 data_mv = DataMOViDA(
                 input_dir           = "data_tmp", 
+                names_mo            = ["mut", "amp", "del"],
                 drug2id             = "drug2ind.txt", 
                 cell2id             = "cell2ind.txt", 
                 mo_gene2id          = ["gene2ind2mut.txt", "gene2ind2amp.txt", "gene2ind2del.txt"],
-                train_file          = "drugcell_train.txt", 
+                train_file          = "drugcell_test.txt", 
                 val_file            = "drugcell_val.txt", 
                 test_file           = "drugcell_test.txt",
                 all_file            = "drugcell_all.txt",
@@ -67,7 +69,9 @@ data_mv = DataMOViDA(
                 ontology            = "ont_tree.txt", 
                 mo_gene2ontology    = ["ont_mut.txt", "ont_amp.txt", "ont_del.txt"]
 )
+print("End Read Data")
 
+#%%
 def train():
     #%%
     module = importlib.import_module("models." + param_train.model_name)
@@ -75,29 +79,30 @@ def train():
     create_dir(param_train.expdir)
     create_dir(param_train.currexpdir, rm_if_exists = True)
 
-    print("Create Model")
 
     # %%
+    print("Create Model")
     model = module.Model(param_train, data_mv)
 
+
+    # %%
     print("Start training")
+    model.model_train(data_mv.train_data, data_mv.val_data, data_mv.ccl_features, data_mv.drug_features, data_mv.path_act, data_mv.term2id_mapping, param_train)
+
 
     # %%
-    model.model_train(data_mv.train_data, data_mv.val_data, data_mv.ccl_features, data_mv.drug_features, param_train)
-
     print("Start testing")
-
-    # %%
-    pred = model.model_test(data_mv.test_data, data_mv.ccl_features, data_mv.drug_features, param_train)
+    pred = model.model_test(data_mv.test_data, data_mv.ccl_features, data_mv.drug_features, data_mv.path_act, data_mv.term2id_mapping, param_train)
     np.savetxt(param_train.result_file, pred,'%.4e')
     
-    pred = model.model_test(data_mv.all_data, data_mv.ccl_features, data_mv.drug_features, param_train)
+    pred = model.model_test(data_mv.all_data, data_mv.ccl_features, data_mv.drug_features, data_mv.path_act, data_mv.term2id_mapping, param_train)
     np.savetxt(param_train.result_all_file, pred,'%.4e')
 
     print("END")
 
     return pred
 
+#%%
 def test():
     
     print("Start testing")
@@ -110,7 +115,7 @@ def test():
     
     return pred
 
-
+#%%
 if __name__ == "__main__":
     #args = [dict_data, dict_param]
 
