@@ -38,13 +38,13 @@ Our tool makes drug sensitivity prediction for cancer cell lines using a XAI mod
       * MOViDA.py : class for drug sensitivity prediction
       * MOViDA_synergy.py : class for synergistic drug combination prediction
    * parameters : directory that contains .txt files for data and parameters information, with the form
-            ```
-            {
-                "input_dir"         : "data_tmp", 
-                "names_mo"          : ["mut", "amp", "del"], 
-                ...
-            }
-            ```
+   ```
+   {
+       "input_dir"         : "data_tmp", 
+       "names_mo"          : ["mut", "amp", "del"], 
+       ...
+   }
+   ```
 
 
 
