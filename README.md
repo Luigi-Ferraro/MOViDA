@@ -16,15 +16,36 @@ Our tool makes drug sensitivity prediction for cancer cell lines using a XAI mod
         ```angular2
         conda install pytorch torchvision torchaudio pytorch-cuda=11.7 -c pytorch -c nvidia
         ```
+    * Python libraries
+         * networkx
+         * numpy
+         * pandas
+         * torchmetrics
+         * torchvision
 
-     
+
 
 ---------
 
-### Environment set up
-* Python libraries
-     * networkx
-     * numpy
-     * pandas
-     * torchmetrics
-     * torchvision
+### Files
+
+* code
+   * main.py : starts training or testing
+   * param_data.py : contains a class that represents the data in input 
+   * param_train.py : contains a class that represents the training parameters
+   * prepare_directories.py : creates directory and file for the experiment
+   * models : directory that contains classes which encode all the parameters and structure of the models, as well as functions needed for training them
+      * MOViDA.py : class for drug sensitivity prediction
+      * MOViDA_synergy.py : class for synergistic drug combination prediction
+* data
+   * ...
+
+
+
+
+---------
+
+### Start training
+
+
+
