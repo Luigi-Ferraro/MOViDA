@@ -37,15 +37,23 @@ Our tool makes drug sensitivity prediction for cancer cell lines using a XAI mod
    * models : directory that contains classes which encode all the parameters and structure of the models, as well as functions needed for training them
       * MOViDA.py : class for drug sensitivity prediction
       * MOViDA_synergy.py : class for synergistic drug combination prediction
-* data
-   * ...
-
+   * parameters : directory that contains .txt files for data and parameters information, with the form
+            ```
+            {
+                "input_dir"         : "data_tmp", 
+                "names_mo"          : ["mut", "amp", "del"], 
+                ...
+            }
+            ```
 
 
 
 ---------
 
 ### Start training
-
-
+* prepare dictionary files for data and parameter
+* execute this command whit the correct data_dict and param_dict
+   ```
+   python code/main.py -data_dict data_dict -param_dict param_dict -cuda 0
+   ```
 
